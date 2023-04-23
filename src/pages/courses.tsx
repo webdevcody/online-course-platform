@@ -14,6 +14,7 @@ import {
   Modal,
   TextInput,
   Stack,
+  Textarea,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { api } from "~/utils/api";
@@ -84,7 +85,7 @@ const Courses: NextPage = () => {
             await courses.refetch();
           })}
         >
-          <Stack mb="2">
+          <Stack>
             <TextInput
               withAsterisk
               label="Title"
@@ -93,8 +94,9 @@ const Courses: NextPage = () => {
               {...createCourseForm.getInputProps("title")}
             />
 
-            <TextInput
+            <Textarea
               withAsterisk
+              minRows={6}
               required
               label="Description"
               placeholder="describe your course a bit"
