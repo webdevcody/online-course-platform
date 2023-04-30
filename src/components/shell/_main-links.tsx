@@ -14,7 +14,7 @@ const links = [
     icon: <IconPencil size="1rem" />,
     color: "blue",
     label: "Manage Course",
-    href: "/courses",
+    href: "/dashboard/courses",
   },
 ];
 
