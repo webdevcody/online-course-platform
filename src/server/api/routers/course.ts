@@ -96,7 +96,7 @@ export const courseRouter = createTRPCRouter({
       });
 
       return createPresignedPost(s3Client, {
-        Bucket: env.S3_BUCKET_NAME,
+        Bucket: env.NEXT_PUBLIC_S3_BUCKET_NAME,
         Key: imageId,
         Fields: {
           key: imageId,

@@ -18,6 +18,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import AdminDashboardLayout from "~/components/layouts/admin-dashboard-layout";
 import { api } from "~/utils/api";
+import { getImageUrl } from "~/utils/getImageUrl";
 
 const Courses: NextPage = () => {
   const router = useRouter();
@@ -148,7 +149,7 @@ const Courses: NextPage = () => {
           {courseQuery.data && (
             <img
               alt="an image of the course"
-              src={`http://localhost:5000/wdc-online-course-platform/${courseQuery.data.imageId}`}
+              src={getImageUrl(courseQuery.data.imageId)}
             />
           )}
         </AdminDashboardLayout>
