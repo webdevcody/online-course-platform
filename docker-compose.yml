@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  # db:
+  #   image: mysql
+  #   restart: always
+  #   environment:
+  #     MYSQL_USER: app
+  #     MYSQL_PASSWORD: app
+  #     MYSQL_DATABASE: db
+  #     MYSQL_ROOT_PASSWORD: root
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - db:/var/lib/mysql
+
+  # localstack:
+  #   image: localstack/localstack:latest
+  #   container_name: localstack_demo
+  #   ports:
+  #     - "4563-4599:4563-4599"
+  #     - "8055:8080"
+  #   environment:
+  #     - SERVICES=s3
+  #     - DEBUG=1
+  #     - DATA_DIR=/tmp/localstack/data
+  #   volumes:
+  #     - "./.localstack:/tmp/localstack"
+  #     - "/var/run/docker.sock:/var/run/docker.sock"
+
+  # prisma-studio:
+  #   build: .
+  #   restart: always
+  #   environment:
+  #     DATABASE_URL: mysql://root:root@db:3306/db
+  #   ports:
+  #     - "5555:5555"
+  #   container_name: prisma-studio
+  #   depends_on:
+  #     - db
+  #   command: "npx prisma studio"
+  #   volumes:
+  #     - .:/home/app
+# volumes:
+#   db:

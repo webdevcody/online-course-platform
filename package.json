@@ -10,6 +10,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.328.0",
+    "@aws-sdk/s3-presigned-post": "^3.328.0",
+    "@aws-sdk/s3-request-presigner": "^3.328.0",
     "@emotion/react": "^11.10.6",
     "@emotion/server": "^11.10.0",
     "@mantine/carousel": "^6.0.8",
@@ -44,6 +47,7 @@
     "react-dom": "18.2.0",
     "superjson": "1.12.2",
     "tabler-icons-react": "^1.56.0",
+    "uuid": "^9.0.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -51,11 +55,14 @@
     "@types/node": "^18.15.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "@types/s3rver": "^3.7.0",
+    "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
     "eslint": "^8.36.0",
     "eslint-config-next": "^13.2.4",
     "prisma": "^4.11.0",
+    "s3rver": "^3.7.1",
     "typescript": "^5.0.2"
   },
   "ct3aMetadata": {

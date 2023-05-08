@@ -1,10 +1,21 @@
-import { Button, Group, Input, Text, TextInput, Title } from "@mantine/core";
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @next/next/no-img-element */
+import {
+  Button,
+  Group,
+  Input,
+  FileInput,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { IconCheck, IconEdit, IconLetterX } from "@tabler/icons-react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import AdminDashboardLayout from "~/components/layouts/admin-dashboard-layout";
 import { api } from "~/utils/api";
 
@@ -14,11 +25,17 @@ const Courses: NextPage = () => {
 
   const updateCourseMutation = api.course.updateCourse.useMutation();
 
+  const createPresignedUrlMutation =
+    api.course.createPresignedUrl.useMutation();
+
   const updateTitleForm = useForm({
     initialValues: {
       title: "",
     },
   });
+
+  const [file, setFile] = useState<File | null>(null);
+  // const fileRef = useRef<HTMLInputElement>(null);
 
   const courseQuery = api.course.getCourseById.useQuery(
     {
@@ -34,6 +51,39 @@ const Courses: NextPage = () => {
 
   const [isEditingTitle, { open: setEditTitle, close: unsetEditTitle }] =
     useDisclosure(false);
+
+  const uploadImage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!file) return;
+    const { url, fields } = await createPresignedUrlMutation.mutateAsync({
+      courseId,
+    });
+    console.log("url", url);
+    const data: Record<string, any> = {
+      ...fields,
+      "Content-Type": file.type,
+      file,
+    };
+    const formData = new FormData();
+    for (const name in data) {
+      formData.append(name, data[name]);
+    }
+    await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+    // refetchImages();
+    setFile(null);
+    await courseQuery.refetch();
+
+    // if (fileRef.current) {
+    //   fileRef.current.value = "";
+    // }
+  };
+
+  // const onFileChange = (e: React.FormEvent<HTMLInputElement>) => {
+  //   setFile(e.currentTarget.files?.[0]);
+  // };
 
   return (
     <>
@@ -78,6 +128,28 @@ const Courses: NextPage = () => {
                 <IconEdit size="1rem" />
               </Button>
             </Group>
+          )}
+
+          <Title order={2}>Course Image</Title>
+          <form onSubmit={uploadImage}>
+            <FileInput onChange={setFile} value={file} />
+
+            <Button
+              type="submit"
+              variant="light"
+              color="blue"
+              mt="md"
+              radius="md"
+            >
+              Upload Image
+            </Button>
+          </form>
+
+          {courseQuery.data && (
+            <img
+              alt="an image of the course"
+              src={`http://localhost:5000/wdc-online-course-platform/${courseQuery.data.imageId}`}
+            />
           )}
         </AdminDashboardLayout>
       </main>
