@@ -59,7 +59,6 @@ const Courses: NextPage = () => {
     const { url, fields } = await createPresignedUrlMutation.mutateAsync({
       courseId,
     });
-    console.log("url", url);
     const data: Record<string, any> = {
       ...fields,
       "Content-Type": file.type,

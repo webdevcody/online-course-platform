@@ -26,3 +26,7 @@ You can check out the [create-t3-app GitHub repository](https://github.com/t3-os
 ## How do I deploy this?
 
 Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+
+# If you run out of disk space, delete this directory on mac (note to myself)
+
+/Users/webdevcody/Library/Containers/com.docker.docker/Data/vms/0/data
