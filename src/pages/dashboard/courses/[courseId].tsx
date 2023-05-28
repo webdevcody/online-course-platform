@@ -3,11 +3,10 @@
 import {
   Button,
   Group,
-  Input,
   FileInput,
-  Text,
   TextInput,
   Title,
+  Stack,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
@@ -20,14 +19,44 @@ import AdminDashboardLayout from "~/components/layouts/admin-dashboard-layout";
 import { api } from "~/utils/api";
 import { getImageUrl } from "~/utils/getImageUrl";
 
+async function uploadFileToS3({
+  getPresignedUrl,
+  file,
+}: {
+  getPresignedUrl: () => Promise<{
+    url: string;
+    fields: Record<string, string>;
+  }>;
+  file: File;
+}) {
+  const { url, fields } = await getPresignedUrl();
+  const data: Record<string, any> = {
+    ...fields,
+    "Content-Type": file.type,
+    file,
+  };
+  const formData = new FormData();
+  for (const name in data) {
+    formData.append(name, data[name]);
+  }
+  await fetch(url, {
+    method: "POST",
+    body: formData,
+  });
+}
+
 const Courses: NextPage = () => {
   const router = useRouter();
   const courseId = router.query.courseId as string;
 
   const updateCourseMutation = api.course.updateCourse.useMutation();
+  const createSectionMutation = api.course.createSection.useMutation();
+  const deleteSection = api.course.deleteSection.useMutation();
 
   const createPresignedUrlMutation =
     api.course.createPresignedUrl.useMutation();
+  const createPresignedUrlForVideoMutation =
+    api.course.createPresignedUrlForVideo.useMutation();
 
   const updateTitleForm = useForm({
     initialValues: {
@@ -35,8 +64,14 @@ const Courses: NextPage = () => {
     },
   });
 
+  const newSectionForm = useForm({
+    initialValues: {
+      title: "",
+    },
+  });
+
   const [file, setFile] = useState<File | null>(null);
-  // const fileRef = useRef<HTMLInputElement>(null);
+  const [newSection, setNewSection] = useState<File | null>(null);
 
   const courseQuery = api.course.getCourseById.useQuery(
     {
@@ -56,23 +91,13 @@ const Courses: NextPage = () => {
   const uploadImage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) return;
-    const { url, fields } = await createPresignedUrlMutation.mutateAsync({
-      courseId,
-    });
-    const data: Record<string, any> = {
-      ...fields,
-      "Content-Type": file.type,
+    await uploadFileToS3({
+      getPresignedUrl: () =>
+        createPresignedUrlMutation.mutateAsync({
+          courseId,
+        }),
       file,
-    };
-    const formData = new FormData();
-    for (const name in data) {
-      formData.append(name, data[name]);
-    }
-    await fetch(url, {
-      method: "POST",
-      body: formData,
     });
-    // refetchImages();
     setFile(null);
     await courseQuery.refetch();
 
@@ -95,62 +120,178 @@ const Courses: NextPage = () => {
 
       <main>
         <AdminDashboardLayout>
-          {isEditingTitle ? (
-            <form
-              onSubmit={updateTitleForm.onSubmit(async (values) => {
-                await updateCourseMutation.mutateAsync({
-                  ...values,
-                  courseId,
-                });
-                await courseQuery.refetch();
-                unsetEditTitle();
-              })}
-            >
+          <Stack spacing={"xl"}>
+            {isEditingTitle ? (
+              <form
+                onSubmit={updateTitleForm.onSubmit(async (values) => {
+                  await updateCourseMutation.mutateAsync({
+                    ...values,
+                    courseId,
+                  });
+                  await courseQuery.refetch();
+                  unsetEditTitle();
+                })}
+              >
+                <Group>
+                  <TextInput
+                    withAsterisk
+                    required
+                    placeholder="name your course here"
+                    {...updateTitleForm.getInputProps("title")}
+                  />
+                  <Button color="green" type="submit">
+                    <IconCheck />
+                  </Button>
+                  <Button color="gray" onClick={unsetEditTitle}>
+                    <IconLetterX />
+                  </Button>
+                </Group>
+              </form>
+            ) : (
               <Group>
-                <TextInput
-                  withAsterisk
-                  required
-                  placeholder="name your course here"
-                  {...updateTitleForm.getInputProps("title")}
-                />
-                <Button color="green" type="submit">
-                  <IconCheck />
-                </Button>
-                <Button color="gray" onClick={unsetEditTitle}>
-                  <IconLetterX />
+                <Title order={1}>{courseQuery.data?.title}</Title>
+                <Button color="gray" onClick={setEditTitle}>
+                  <IconEdit size="1rem" />
                 </Button>
               </Group>
-            </form>
-          ) : (
+            )}
+
             <Group>
-              <Title order={1}>{courseQuery.data?.title}</Title>
-              <Button color="gray" onClick={setEditTitle}>
-                <IconEdit size="1rem" />
-              </Button>
+              {courseQuery.data && (
+                <img
+                  width="200"
+                  alt="an image of the course"
+                  src={getImageUrl(courseQuery.data.imageId)}
+                />
+              )}
+              <Stack sx={{ flex: 1 }}>
+                <form onSubmit={uploadImage}>
+                  <FileInput
+                    label="Course Image"
+                    onChange={setFile}
+                    value={file}
+                  />
+
+                  <Button
+                    disabled={!file}
+                    type="submit"
+                    variant="light"
+                    color="blue"
+                    mt="md"
+                    radius="md"
+                  >
+                    Upload Image
+                  </Button>
+                </form>
+              </Stack>
             </Group>
-          )}
 
-          <Title order={2}>Course Image</Title>
-          <form onSubmit={uploadImage}>
-            <FileInput onChange={setFile} value={file} />
+            <Stack>
+              <Title order={2}>Sections </Title>
 
-            <Button
-              type="submit"
-              variant="light"
-              color="blue"
-              mt="md"
-              radius="md"
-            >
-              Upload Image
-            </Button>
-          </form>
+              {courseQuery.data?.sections?.map((section) => (
+                <Stack
+                  key={section.id}
+                  p="xl"
+                  sx={{
+                    border: "1px solid white",
+                  }}
+                >
+                  <Group>
+                    <Title sx={{ flex: 1 }} order={3}>
+                      {section.title}
+                    </Title>
+                    <Button
+                      type="submit"
+                      variant="light"
+                      color="red"
+                      mt="md"
+                      radius="md"
+                      onClick={async () => {
+                        if (
+                          !confirm(
+                            "are you sure you want to delete this section?"
+                          )
+                        )
+                          return;
+                        await deleteSection.mutateAsync({
+                          sectionId: section.id,
+                        });
+                        await courseQuery.refetch();
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </Group>
+                  <video width="400" controls>
+                    <source
+                      src={`http://localhost:9000/wdc-online-course-platform/${section.videoId}`}
+                      type="video/mp4"
+                    />
+                    Your browser does not support HTML video.
+                  </video>
+                </Stack>
+              ))}
 
-          {courseQuery.data && (
-            <img
-              alt="an image of the course"
-              src={getImageUrl(courseQuery.data.imageId)}
-            />
-          )}
+              <Stack
+                p="xl"
+                sx={{
+                  border: "1px dashed white",
+                }}
+              >
+                <form
+                  onSubmit={newSectionForm.onSubmit(async (values) => {
+                    if (!newSection) return;
+
+                    const section = await createSectionMutation.mutateAsync({
+                      courseId: courseId,
+                      title: values.title,
+                    });
+
+                    await uploadFileToS3({
+                      getPresignedUrl: () =>
+                        createPresignedUrlForVideoMutation.mutateAsync({
+                          sectionId: section.id,
+                        }),
+                      file: newSection,
+                    });
+                    setNewSection(null);
+                    await courseQuery.refetch();
+                    newSectionForm.reset();
+                  })}
+                >
+                  <Stack spacing="xl">
+                    <Title order={3}>Create New Section</Title>
+
+                    <TextInput
+                      withAsterisk
+                      required
+                      label="Section Title"
+                      placeholder="name your section"
+                      {...newSectionForm.getInputProps("title")}
+                    />
+
+                    <FileInput
+                      label="Section Video"
+                      onChange={setNewSection}
+                      required
+                      value={newSection}
+                    />
+
+                    <Button
+                      type="submit"
+                      variant="light"
+                      color="blue"
+                      mt="md"
+                      radius="md"
+                    >
+                      Create Section
+                    </Button>
+                  </Stack>
+                </form>
+              </Stack>
+            </Stack>
+          </Stack>
         </AdminDashboardLayout>
       </main>
     </>

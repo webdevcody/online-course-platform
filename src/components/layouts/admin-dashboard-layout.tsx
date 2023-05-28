@@ -20,7 +20,7 @@ export default function AdminDashboardLayout({
 
   return (
     <AppShell
-      padding="md"
+      padding="xl"
       navbar={
         <Navbar p="xs" width={{ base: 300 }}>
           <Navbar.Section grow mt="md">

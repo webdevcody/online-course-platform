@@ -63,10 +63,19 @@ model VerificationToken {
 }
 
 model Course {
-    id          String @id @default(cuid())
-    user        User   @relation(fields: [userId], references: [id])
+    id          String    @id @default(cuid())
+    user        User      @relation(fields: [userId], references: [id])
     userId      String
     title       String
     description String
-    imageId     String @default("")
+    imageId     String    @default("")
+    sections    Section[]
+}
+
+model Section {
+    id       String  @id @default(cuid())
+    title    String
+    videoId  String
+    course   Course? @relation(fields: [courseId], references: [id])
+    courseId String?
 }
