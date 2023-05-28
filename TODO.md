@@ -1,11 +1,17 @@
 # TODO
 
+## Must Have
+
 - add loading state when creating and uploading a new section / file
 - adding loading state when uploading a new course image
 - add a description to the section (mantine has a markdown editor)
 - delete the file from s3 when deleting a section
 - section video "required" doesn't seem to be working; integrated that with mantine form
 - disable button while submitting
+
+## Could Live Without
+
+- ability to re-order the sections
 
 # Features We Need
 
