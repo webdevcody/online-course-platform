@@ -52,6 +52,7 @@ const Courses: NextPage = () => {
   const updateCourseMutation = api.course.updateCourse.useMutation();
   const createSectionMutation = api.course.createSection.useMutation();
   const deleteSection = api.course.deleteSection.useMutation();
+  const swapSections = api.course.swapSections.useMutation();
 
   const createPresignedUrlMutation =
     api.course.createPresignedUrl.useMutation();
@@ -109,6 +110,10 @@ const Courses: NextPage = () => {
   // const onFileChange = (e: React.FormEvent<HTMLInputElement>) => {
   //   setFile(e.currentTarget.files?.[0]);
   // };
+
+  const sortedSections = (courseQuery.data?.sections ?? []).sort(
+    (a, b) => a.order - b.order
+  );
 
   return (
     <>
@@ -189,7 +194,7 @@ const Courses: NextPage = () => {
             <Stack>
               <Title order={2}>Sections </Title>
 
-              {courseQuery.data?.sections?.map((section) => (
+              {sortedSections.map((section, idx) => (
                 <Stack
                   key={section.id}
                   p="xl"
@@ -201,6 +206,46 @@ const Courses: NextPage = () => {
                     <Title sx={{ flex: 1 }} order={3}>
                       {section.title}
                     </Title>
+                    {idx > 0 && (
+                      <Button
+                        type="submit"
+                        variant="light"
+                        color="white"
+                        mt="md"
+                        radius="md"
+                        onClick={async () => {
+                          const targetSection = sortedSections[idx - 1];
+                          if (!targetSection) return;
+                          await swapSections.mutateAsync({
+                            sectionIdSource: section.id,
+                            sectionIdTarget: targetSection.id,
+                          });
+                          await courseQuery.refetch();
+                        }}
+                      >
+                        Move Up
+                      </Button>
+                    )}
+                    {idx < sortedSections.length - 1 && (
+                      <Button
+                        type="submit"
+                        variant="light"
+                        color="white"
+                        mt="md"
+                        radius="md"
+                        onClick={async () => {
+                          const targetSection = sortedSections[idx + 1];
+                          if (!targetSection) return;
+                          await swapSections.mutateAsync({
+                            sectionIdSource: section.id,
+                            sectionIdTarget: targetSection.id,
+                          });
+                          await courseQuery.refetch();
+                        }}
+                      >
+                        Move Down
+                      </Button>
+                    )}
                     <Button
                       type="submit"
                       variant="light"

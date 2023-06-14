@@ -17,15 +17,6 @@ services:
     ports:
       - 8080:8080
 
-  prisma-studio:
-    build: .
-    restart: always
-    environment:
-      DATABASE_URL: postgresql://postgres:example@db:5432/postgres
-    ports:
-      - 5555:5555
-    command: "npx prisma studio"
-
   s3-bucket:
     build: .
     restart: always

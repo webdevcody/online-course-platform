@@ -78,4 +78,5 @@ model Section {
     videoId  String
     course   Course? @relation(fields: [courseId], references: [id])
     courseId String?
+    order    Int     @default(autoincrement())
 }

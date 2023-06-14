@@ -160,6 +160,53 @@ export const courseRouter = createTRPCRouter({
 
       return section;
     }),
+  swapSections: protectedProcedure
+    .input(
+      z.object({ sectionIdSource: z.string(), sectionIdTarget: z.string() })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const sectionSource = await ctx.prisma.section.findUnique({
+        where: {
+          id: input.sectionIdSource,
+        },
+      });
+      if (!sectionSource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "the source section does not exist",
+        });
+      }
+
+      const sectionTarget = await ctx.prisma.section.findUnique({
+        where: {
+          id: input.sectionIdTarget,
+        },
+      });
+      if (!sectionTarget) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "the target section does not exist",
+        });
+      }
+
+      await ctx.prisma.section.update({
+        where: {
+          id: input.sectionIdSource,
+        },
+        data: {
+          order: sectionTarget.order,
+        },
+      });
+
+      await ctx.prisma.section.update({
+        where: {
+          id: input.sectionIdTarget,
+        },
+        data: {
+          order: sectionSource.order,
+        },
+      });
+    }),
   createPresignedUrlForVideo: protectedProcedure
     .input(z.object({ sectionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
